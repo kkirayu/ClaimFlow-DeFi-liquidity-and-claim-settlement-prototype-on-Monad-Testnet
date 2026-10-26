@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "id": "1793028364568-925aa7f3",
+  "source": "cli",
+  "operation": "settle-batch",
+  "workloadSize": 10,
+  "batchSize": 5,
+  "chainId": 31337,
+  "chainName": "Anvil Local",
+  "rpcProvider": "Local Anvil RPC",
+  "signer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+  "startedAt": "2026-10-26T15:26:04.568Z",
+  "finishedAt": "2026-10-26T15:26:04.600Z",
+  "durationMs": 32,
+  "setupMs": 4289,
+  "setupNotes": "10 synthetic claims were submitted and approved before measurement. 20 setup transactions are excluded from the samples.",
+  "samples": [
+    {
+      "index": 0,
+      "label": "Settle batch 1 (5 claims)",
+      "status": "success",
+      "submittedAt": 1793028364568,
+      "txHash": "0x36cf1ade02399f7e404355e70adfd0fc949d709e5cf10fb559bf61c7de9c7ddd",
+      "confirmedAt": 1793028364586,
+      "latencyMs": 18,
+      "blockNumber": 43,
+      "gasUsed": 204059
+    },
+    {
+      "index": 1,
+      "label": "Settle batch 2 (5 claims)",
+      "status": "success",
+      "submittedAt": 1793028364586,
+      "txHash": "0xbc0694c8d1d3579d6f86ae8a06f7bc9925641d36fddbe0b21ba6cb7db221ff78",
+      "confirmedAt": 1793028364600,
+      "latencyMs": 14,
+      "blockNumber": 44,
+      "gasUsed": 186971
+    }
+  ],
+  "summary": {
+    "attempted": 2,
+    "submitted": 2,
+    "confirmed": 2,
+    "reverted": 0,
+    "failed": 0,
+    "skipped": 0,
+    "successRate": 100,
+    "durationMs": 32,
+    "medianLatencyMs": 16,
+    "p95LatencyMs": null,
+    "throughputTps": 62.5,
+    "totalGas": 391030,
+    "medianGas": 204059,
+    "claimsProcessed": 10
+  },
+  "methodology": "Transactions were sent sequentially so latency samples are not distorted by nonce contention. Throughput is observed end-to-end client/RPC throughput, not maximum network capacity. Setup transactions are excluded from measured samples."
+}
