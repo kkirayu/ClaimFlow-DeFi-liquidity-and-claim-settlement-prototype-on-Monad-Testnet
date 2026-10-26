@@ -130,7 +130,8 @@ variable.
 | `pnpm seed:testnet`                                                           | Seed the testnet deployment (optional demo data).                       |
 | `pnpm benchmark --network local --operation settle-batch --size 10 --batch 5` | CLI benchmark.                                                          |
 | `pnpm sync:abis`                                                              | Regenerate `frontend/src/lib/abis.generated.ts` from Foundry artifacts. |
-| `pnpm format` / `pnpm format:check`                                           | Prettier (Solidity + frontend, Tailwind class sorting).                 |
+| `pnpm format` / `pnpm format:check`                                           | Prettier for frontend/docs (Tailwind class sorting).                    |
+| `pnpm contracts:fmt` / `pnpm contracts:fmt:check`                             | Forge formatting for Solidity.                                          |
 | `pnpm check`                                                                  | Lint, typecheck, unit tests, contract tests, build.                     |
 
 ## Testing
