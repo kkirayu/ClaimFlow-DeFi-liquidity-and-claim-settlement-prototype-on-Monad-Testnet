@@ -1,0 +1,101 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contracts:
+    name: Contracts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: stable
+      - name: Format check
+        working-directory: contracts
+        run: forge fmt --check
+      - name: Build
+        working-directory: contracts
+        run: forge build --sizes
+      - name: Test
+        working-directory: contracts
+        run: forge test -vv
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.14.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test:coverage
+        working-directory: frontend
+      - run: pnpm build
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: frontend-coverage
+          path: frontend/coverage
+          if-no-files-found: ignore
+
+  e2e:
+    name: End-to-end
+    runs-on: ubuntu-latest
+    needs: [contracts, frontend]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.14.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: stable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm contracts:build
+      - name: Start Anvil
+        run: |
+          anvil --host 127.0.0.1 --port 8545 --chain-id 31337 > anvil.log 2>&1 &
+          echo $! > anvil.pid
+      - name: Deploy and seed locally
+        run: pnpm deploy:local
+      - run: pnpm exec playwright install --with-deps chromium
+        working-directory: frontend
+      - name: Run Playwright
+        run: pnpm test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: |
+            frontend/playwright-report
+            frontend/test-results
+            anvil.log
+          if-no-files-found: ignore
+      - name: Stop Anvil
+        if: always()
+        run: kill "$(cat anvil.pid)" || true

@@ -1,0 +1,40 @@
+{
+  "name": "claimflow",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ClaimFlow — DeFi liquidity and claim settlement prototype on Monad Testnet",
+  "packageManager": "pnpm@12.14.0",
+  "engines": {
+    "node": ">=20.12"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @claimflow/frontend dev",
+    "build": "pnpm --filter @claimflow/frontend build",
+    "preview": "pnpm --filter @claimflow/frontend preview",
+    "lint": "pnpm --filter @claimflow/frontend lint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "pnpm --filter @claimflow/frontend typecheck",
+    "test": "pnpm --filter @claimflow/frontend test",
+    "test:e2e": "pnpm --filter @claimflow/frontend test:e2e",
+    "contracts:build": "cd contracts && forge build",
+    "contracts:test": "cd contracts && forge test",
+    "contracts:fmt": "cd contracts && forge fmt",
+    "contracts:fmt:check": "cd contracts && forge fmt --check",
+    "sync:abis": "node scripts/sync-abis.mjs",
+    "anvil": "anvil --host 127.0.0.1 --port 8545 --chain-id 31337",
+    "deploy:local": "node scripts/deploy.mjs --network local --seed",
+    "seed:local": "node scripts/seed.mjs --network local",
+    "deploy:testnet": "node scripts/deploy.mjs --network testnet --write-env",
+    "seed:testnet": "node scripts/seed.mjs --network testnet",
+    "benchmark": "node scripts/benchmark.mjs",
+    "dev:local": "bash scripts/dev-local.sh",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm contracts:test && pnpm build"
+  },
+  "devDependencies": {
+    "prettier": "^3.5.3",
+    "prettier-plugin-solidity": "^1.4.2",
+    "prettier-plugin-tailwindcss": "^0.6.14",
+    "viem": "^2.57.11"
+  }
+}

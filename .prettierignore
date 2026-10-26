@@ -1,0 +1,13 @@
+node_modules
+frontend/node_modules
+frontend/dist
+frontend/coverage
+frontend/test-results
+frontend/playwright-report
+contracts/lib
+contracts/out
+contracts/cache
+deployments/*.json
+!deployments/*.example.json
+benchmark-results
+pnpm-lock.yaml
