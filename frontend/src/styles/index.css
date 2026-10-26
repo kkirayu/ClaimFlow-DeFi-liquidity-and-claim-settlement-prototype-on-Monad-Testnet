@@ -1,0 +1,135 @@
+@import '@fontsource-variable/inter';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    @apply bg-canvas;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-canvas text-ink-primary min-h-screen font-sans text-[15px];
+  }
+
+  ::selection {
+    @apply bg-primary/20;
+  }
+
+  a,
+  button,
+  input,
+  select,
+  textarea {
+    @apply outline-none;
+  }
+
+  :focus-visible {
+    @apply ring-primary ring-offset-surface ring-2 ring-offset-2;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply text-balance;
+  }
+
+  table {
+    @apply border-separate border-spacing-0;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-card border-border bg-surface shadow-card border;
+  }
+
+  .card-pad {
+    @apply p-5 sm:p-6;
+  }
+
+  .label {
+    @apply text-ink-secondary mb-1.5 block text-[13px] font-medium;
+  }
+
+  .help-text {
+    @apply text-ink-muted mt-1.5 text-xs leading-5;
+  }
+
+  .field {
+    @apply rounded-field border-border bg-surface text-ink-primary placeholder:text-ink-muted/70 hover:border-border-strong focus:border-primary focus:ring-primary/15 disabled:bg-surface-muted disabled:text-ink-muted h-11 w-full border px-3 text-sm shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-colors duration-150 focus:ring-2 disabled:cursor-not-allowed;
+  }
+
+  .field-error {
+    @apply border-danger focus:border-danger focus:ring-danger/15;
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum';
+  }
+
+  .table-head {
+    @apply bg-surface-muted/70 text-ink-muted text-left text-[11px] font-semibold uppercase tracking-[0.06em];
+  }
+
+  .table-row {
+    @apply border-border hover:bg-surface-muted/50 border-b transition-colors last:border-0;
+  }
+
+  .table-cell {
+    @apply text-ink-secondary whitespace-nowrap px-4 py-3.5 align-middle text-[13px];
+  }
+
+  .skeleton {
+    @apply animate-pulse rounded-md bg-[#E9EDF5];
+  }
+
+  .link {
+    @apply text-primary hover:text-primary-hover rounded-sm font-medium underline-offset-4 transition-colors hover:underline;
+  }
+
+  .mono {
+    @apply font-mono text-[12px] tracking-tight;
+  }
+}
+
+@layer utilities {
+  .scrollbar-subtle {
+    scrollbar-width: thin;
+    scrollbar-color: #d0d5dd transparent;
+  }
+
+  .scrollbar-subtle::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+  }
+
+  .scrollbar-subtle::-webkit-scrollbar-thumb {
+    background-color: #d0d5dd;
+    border-radius: 999px;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
