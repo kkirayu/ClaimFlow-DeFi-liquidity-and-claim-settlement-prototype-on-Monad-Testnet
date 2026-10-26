@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import { BaseTest } from './BaseTest.sol';
-import { ClaimManager } from '../src/ClaimManager.sol';
-import { LiquidityVault } from '../src/LiquidityVault.sol';
-import { IAccessControl } from '@openzeppelin/contracts/access/IAccessControl.sol';
+import { BaseTest } from "./BaseTest.sol";
+import { ClaimManager } from "../src/ClaimManager.sol";
+import { LiquidityVault } from "../src/LiquidityVault.sol";
+import { IAccessControl } from "@openzeppelin/contracts/access/IAccessControl.sol";
 
 contract ClaimManagerTest is BaseTest {
     function setUp() public override {
@@ -13,9 +13,9 @@ contract ClaimManagerTest is BaseTest {
     }
 
     function test_SubmitClaimStoresMinimumMetadata() public {
-        bytes32 claimId = keccak256('claim-submit');
-        bytes32 refHash = keccak256('opaque-ref');
-        bytes32 evidenceHash = keccak256('opaque-evidence');
+        bytes32 claimId = keccak256("claim-submit");
+        bytes32 refHash = keccak256("opaque-ref");
+        bytes32 evidenceHash = keccak256("opaque-evidence");
 
         vm.expectEmit(true, true, false, true, address(manager));
         emit ClaimManager.ClaimSubmitted(claimId, refHash, 10_000 * ONE, recipient);
@@ -57,10 +57,10 @@ contract ClaimManagerTest is BaseTest {
     }
 
     function test_SubmitRequiresOperatorRole() public {
-        bytes32 claimId = keccak256('unauthorized-submit');
+        bytes32 claimId = keccak256("unauthorized-submit");
         _expectMissingRole(outsider, manager.CLAIM_OPERATOR_ROLE());
         vm.prank(outsider);
-        manager.submitClaim(claimId, keccak256('ref'), 101, 1, recipient, 1_000 * ONE, bytes32(0));
+        manager.submitClaim(claimId, keccak256("ref"), 101, 1, recipient, 1_000 * ONE, bytes32(0));
     }
 
     function test_SubmitRejectsDuplicateId() public {
@@ -69,13 +69,7 @@ contract ClaimManagerTest is BaseTest {
         vm.prank(operator);
         vm.expectRevert(abi.encodeWithSelector(ClaimManager.ClaimAlreadyExists.selector, claimId));
         manager.submitClaim(
-            claimId,
-            keccak256('other-ref'),
-            101,
-            1,
-            recipient,
-            1_000 * ONE,
-            bytes32(0)
+            claimId, keccak256("other-ref"), 101, 1, recipient, 1_000 * ONE, bytes32(0)
         );
     }
 
@@ -83,22 +77,22 @@ contract ClaimManagerTest is BaseTest {
         vm.startPrank(operator);
 
         vm.expectRevert(ClaimManager.InvalidClaimId.selector);
-        manager.submitClaim(bytes32(0), keccak256('r'), 1, 1, recipient, 1 * ONE, bytes32(0));
+        manager.submitClaim(bytes32(0), keccak256("r"), 1, 1, recipient, 1 * ONE, bytes32(0));
 
         vm.expectRevert(ClaimManager.InvalidReferenceHash.selector);
-        manager.submitClaim(keccak256('c1'), bytes32(0), 1, 1, recipient, 1 * ONE, bytes32(0));
+        manager.submitClaim(keccak256("c1"), bytes32(0), 1, 1, recipient, 1 * ONE, bytes32(0));
 
         vm.expectRevert(abi.encodeWithSelector(ClaimManager.InvalidCategory.selector, 0));
-        manager.submitClaim(keccak256('c2'), keccak256('r'), 1, 0, recipient, 1 * ONE, bytes32(0));
+        manager.submitClaim(keccak256("c2"), keccak256("r"), 1, 0, recipient, 1 * ONE, bytes32(0));
 
         vm.expectRevert(abi.encodeWithSelector(ClaimManager.InvalidCategory.selector, 9));
-        manager.submitClaim(keccak256('c3'), keccak256('r'), 1, 9, recipient, 1 * ONE, bytes32(0));
+        manager.submitClaim(keccak256("c3"), keccak256("r"), 1, 9, recipient, 1 * ONE, bytes32(0));
 
         vm.expectRevert(ClaimManager.ZeroAddress.selector);
-        manager.submitClaim(keccak256('c4'), keccak256('r'), 1, 1, address(0), 1 * ONE, bytes32(0));
+        manager.submitClaim(keccak256("c4"), keccak256("r"), 1, 1, address(0), 1 * ONE, bytes32(0));
 
         vm.expectRevert(ClaimManager.InvalidAmount.selector);
-        manager.submitClaim(keccak256('c5'), keccak256('r'), 1, 1, recipient, 0, bytes32(0));
+        manager.submitClaim(keccak256("c5"), keccak256("r"), 1, 1, recipient, 0, bytes32(0));
 
         vm.stopPrank();
     }
@@ -111,7 +105,7 @@ contract ClaimManagerTest is BaseTest {
         emit ClaimManager.ClaimApproved(claimId, 12_500 * ONE);
         _approve(claimId);
 
-        (, , , , , , , ClaimManager.ClaimStatus status, , , ) = manager.claims(claimId);
+        (,,,,,,, ClaimManager.ClaimStatus status,,,) = manager.claims(claimId);
         assertEq(uint8(status), uint8(ClaimManager.ClaimStatus.ApprovedReserved));
         assertEq(vault.totalReserved(), 12_500 * ONE);
         assertEq(vault.reservedByClaim(claimId), 12_500 * ONE);
@@ -129,14 +123,12 @@ contract ClaimManagerTest is BaseTest {
         vm.prank(approver);
         vm.expectRevert(
             abi.encodeWithSelector(
-                LiquidityVault.InsufficientLiquidity.selector,
-                available,
-                250_000 * ONE
+                LiquidityVault.InsufficientLiquidity.selector, available, 250_000 * ONE
             )
         );
         manager.approveClaim(claimId);
 
-        (, , , , , , , ClaimManager.ClaimStatus status, , , ) = manager.claims(claimId);
+        (,,,,,,, ClaimManager.ClaimStatus status,,,) = manager.claims(claimId);
         assertEq(uint8(status), uint8(ClaimManager.ClaimStatus.Pending));
         assertEq(vault.totalReserved(), 0);
         assertEq(manager.getStats().pending, 1);
@@ -176,7 +168,7 @@ contract ClaimManagerTest is BaseTest {
         vm.prank(approver);
         manager.rejectClaim(claimId);
 
-        (, , , , , , , ClaimManager.ClaimStatus status, , , ) = manager.claims(claimId);
+        (,,,,,,, ClaimManager.ClaimStatus status,,,) = manager.claims(claimId);
         assertEq(uint8(status), uint8(ClaimManager.ClaimStatus.Rejected));
         assertEq(vault.totalReserved(), 0);
         assertEq(manager.getStats().rejected, 1);
@@ -207,7 +199,7 @@ contract ClaimManagerTest is BaseTest {
         vm.prank(operator);
         manager.cancelClaim(claimId);
 
-        (, , , , , , , ClaimManager.ClaimStatus status, , , ) = manager.claims(claimId);
+        (,,,,,,, ClaimManager.ClaimStatus status,,,) = manager.claims(claimId);
         assertEq(uint8(status), uint8(ClaimManager.ClaimStatus.Cancelled));
         assertEq(manager.getStats().cancelled, 1);
         assertEq(vault.totalReserved(), 0);
@@ -230,7 +222,7 @@ contract ClaimManagerTest is BaseTest {
         bytes32 claimId = _newClaim(10, 1_000 * ONE);
         vm.prank(canceller);
         manager.cancelClaim(claimId);
-        (, , , , , , , ClaimManager.ClaimStatus status, , , ) = manager.claims(claimId);
+        (,,,,,,, ClaimManager.ClaimStatus status,,,) = manager.claims(claimId);
         assertEq(uint8(status), uint8(ClaimManager.ClaimStatus.Cancelled));
     }
 
@@ -244,7 +236,7 @@ contract ClaimManagerTest is BaseTest {
         vm.prank(canceller);
         manager.cancelClaim(claimId);
 
-        (, , , , , , , ClaimManager.ClaimStatus status, , , ) = manager.claims(claimId);
+        (,,,,,,, ClaimManager.ClaimStatus status,,,) = manager.claims(claimId);
         assertEq(uint8(status), uint8(ClaimManager.ClaimStatus.Cancelled));
         assertEq(token.balanceOf(address(vault)), vaultBalance);
         assertEq(vault.totalReserved(), 0);
@@ -275,7 +267,7 @@ contract ClaimManagerTest is BaseTest {
         assertEq(vault.totalReserved(), 0);
         assertEq(vault.reservedByClaim(claimId), 0);
         assertEq(manager.getStats().paid, 1);
-        (, , , , , , , ClaimManager.ClaimStatus status, , , ) = manager.claims(claimId);
+        (,,,,,,, ClaimManager.ClaimStatus status,,,) = manager.claims(claimId);
         assertEq(uint8(status), uint8(ClaimManager.ClaimStatus.Paid));
     }
 
@@ -322,9 +314,8 @@ contract ClaimManagerTest is BaseTest {
         ids[2] = id3;
 
         uint256 total = 6_000 * ONE;
-        bytes32 expectedBatchId = keccak256(
-            abi.encode(block.chainid, address(manager), 1, settler, total)
-        );
+        bytes32 expectedBatchId =
+            keccak256(abi.encode(block.chainid, address(manager), 1, settler, total));
 
         vm.expectEmit(true, false, false, true, address(manager));
         emit ClaimManager.BatchSettled(expectedBatchId, 3, total);
@@ -361,7 +352,7 @@ contract ClaimManagerTest is BaseTest {
 
         assertEq(token.balanceOf(recipient), 0);
         assertEq(vault.totalReserved(), 4_000 * ONE);
-        (, , , , , , , ClaimManager.ClaimStatus status, , , ) = manager.claims(approvedId);
+        (,,,,,,, ClaimManager.ClaimStatus status,,,) = manager.claims(approvedId);
         assertEq(uint8(status), uint8(ClaimManager.ClaimStatus.ApprovedReserved));
         assertEq(manager.getStats().paid, 0);
     }
@@ -512,13 +503,7 @@ contract ClaimManagerTest is BaseTest {
         vm.prank(operator);
         vm.expectRevert(abi.encodeWithSelector(ClaimManager.ClaimAlreadyExists.selector, claimId));
         manager.submitClaim(
-            claimId,
-            keccak256('new-ref'),
-            101,
-            1,
-            recipient,
-            1_000 * ONE,
-            bytes32(0)
+            claimId, keccak256("new-ref"), 101, 1, recipient, 1_000 * ONE, bytes32(0)
         );
     }
 
@@ -561,6 +546,6 @@ contract ClaimManagerTest is BaseTest {
     }
 
     function claimIdOf(uint256 seed) internal pure returns (bytes32) {
-        return keccak256(abi.encodePacked('claim', seed));
+        return keccak256(abi.encodePacked("claim", seed));
     }
 }

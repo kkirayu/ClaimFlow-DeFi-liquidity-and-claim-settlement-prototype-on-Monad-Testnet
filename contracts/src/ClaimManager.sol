@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import { AccessControl } from '@openzeppelin/contracts/access/AccessControl.sol';
-import { ReentrancyGuard } from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
-import { ILiquidityVault } from './interfaces/ILiquidityVault.sol';
+import { AccessControl } from "@openzeppelin/contracts/access/AccessControl.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import { ILiquidityVault } from "./interfaces/ILiquidityVault.sol";
 
 /**
  * @title ClaimManager
@@ -22,10 +22,10 @@ import { ILiquidityVault } from './interfaces/ILiquidityVault.sol';
  * Paid, Rejected and Cancelled are terminal.
  */
 contract ClaimManager is AccessControl, ReentrancyGuard {
-    bytes32 public constant CLAIM_OPERATOR_ROLE = keccak256('CLAIM_OPERATOR_ROLE');
-    bytes32 public constant CLAIM_APPROVER_ROLE = keccak256('CLAIM_APPROVER_ROLE');
-    bytes32 public constant SETTLEMENT_ROLE = keccak256('SETTLEMENT_ROLE');
-    bytes32 public constant CLAIM_CANCELLER_ROLE = keccak256('CLAIM_CANCELLER_ROLE');
+    bytes32 public constant CLAIM_OPERATOR_ROLE = keccak256("CLAIM_OPERATOR_ROLE");
+    bytes32 public constant CLAIM_APPROVER_ROLE = keccak256("CLAIM_APPROVER_ROLE");
+    bytes32 public constant SETTLEMENT_ROLE = keccak256("SETTLEMENT_ROLE");
+    bytes32 public constant CLAIM_CANCELLER_ROLE = keccak256("CLAIM_CANCELLER_ROLE");
 
     enum ClaimStatus {
         None,
@@ -75,10 +75,7 @@ contract ClaimManager is AccessControl, ReentrancyGuard {
     uint256 public batchNonce;
 
     event ClaimSubmitted(
-        bytes32 indexed claimId,
-        bytes32 indexed claimRefHash,
-        uint256 amount,
-        address recipient
+        bytes32 indexed claimId, bytes32 indexed claimRefHash, uint256 amount, address recipient
     );
     event ClaimApproved(bytes32 indexed claimId, uint256 amount);
     event ClaimRejected(bytes32 indexed claimId);
@@ -201,8 +198,8 @@ contract ClaimManager is AccessControl, ReentrancyGuard {
 
         if (claim.status == ClaimStatus.Pending) {
             if (!isCanceller) {
-                bool isCreatorOperator = claim.createdBy == msg.sender &&
-                    hasRole(CLAIM_OPERATOR_ROLE, msg.sender);
+                bool isCreatorOperator =
+                    claim.createdBy == msg.sender && hasRole(CLAIM_OPERATOR_ROLE, msg.sender);
                 if (!isCreatorOperator) revert NotAuthorizedToCancel();
             }
 
@@ -246,9 +243,12 @@ contract ClaimManager is AccessControl, ReentrancyGuard {
      * @dev The complete batch is validated before the first payout. Any invalid item, duplicate, or
      *      failed transfer reverts the whole transaction, so no partial payouts can occur.
      */
-    function settleBatch(
-        bytes32[] calldata claimIds
-    ) external onlyRole(SETTLEMENT_ROLE) nonReentrant returns (bytes32 batchId) {
+    function settleBatch(bytes32[] calldata claimIds)
+        external
+        onlyRole(SETTLEMENT_ROLE)
+        nonReentrant
+        returns (bytes32 batchId)
+    {
         uint256 count = claimIds.length;
         if (count == 0) revert EmptyBatch();
         if (count > maxBatchSize) revert BatchTooLarge(count, maxBatchSize);
@@ -313,10 +313,11 @@ contract ClaimManager is AccessControl, ReentrancyGuard {
     }
 
     /// @notice Paginated claim IDs. Keeps RPC responses bounded as the demo grows.
-    function getClaimIds(
-        uint256 offset,
-        uint256 limit
-    ) external view returns (bytes32[] memory ids) {
+    function getClaimIds(uint256 offset, uint256 limit)
+        external
+        view
+        returns (bytes32[] memory ids)
+    {
         uint256 total = _claimIds.length;
         if (offset >= total) return new bytes32[](0);
         uint256 end = offset + limit;

@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import { Test } from 'forge-std/Test.sol';
-import { IERC20 } from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import { IAccessControl } from '@openzeppelin/contracts/access/IAccessControl.sol';
-import { MockUSDC } from '../src/MockUSDC.sol';
-import { LiquidityVault } from '../src/LiquidityVault.sol';
-import { ClaimManager } from '../src/ClaimManager.sol';
-import { ILiquidityVault } from '../src/interfaces/ILiquidityVault.sol';
+import { Test } from "forge-std/Test.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { IAccessControl } from "@openzeppelin/contracts/access/IAccessControl.sol";
+import { MockUSDC } from "../src/MockUSDC.sol";
+import { LiquidityVault } from "../src/LiquidityVault.sol";
+import { ClaimManager } from "../src/ClaimManager.sol";
+import { ILiquidityVault } from "../src/interfaces/ILiquidityVault.sol";
 
 abstract contract BaseTest is Test {
     MockUSDC internal token;
@@ -57,16 +57,16 @@ abstract contract BaseTest is Test {
     }
 
     function _newClaim(uint256 seed, uint256 amount) internal returns (bytes32 claimId) {
-        claimId = keccak256(abi.encodePacked('claim', seed));
+        claimId = keccak256(abi.encodePacked("claim", seed));
         vm.prank(operator);
         manager.submitClaim(
             claimId,
-            keccak256(abi.encodePacked('ref', seed)),
+            keccak256(abi.encodePacked("ref", seed)),
             101,
             1,
             recipient,
             amount,
-            keccak256(abi.encodePacked('evidence', seed))
+            keccak256(abi.encodePacked("evidence", seed))
         );
     }
 
@@ -78,9 +78,7 @@ abstract contract BaseTest is Test {
     function _expectMissingRole(address account, bytes32 role) internal {
         vm.expectRevert(
             abi.encodeWithSelector(
-                IAccessControl.AccessControlUnauthorizedAccount.selector,
-                account,
-                role
+                IAccessControl.AccessControlUnauthorizedAccount.selector, account, role
             )
         );
     }

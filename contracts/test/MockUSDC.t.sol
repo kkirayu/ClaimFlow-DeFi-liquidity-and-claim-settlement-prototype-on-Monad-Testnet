@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import { Test } from 'forge-std/Test.sol';
-import { IAccessControl } from '@openzeppelin/contracts/access/IAccessControl.sol';
-import { MockUSDC } from '../src/MockUSDC.sol';
+import { Test } from "forge-std/Test.sol";
+import { IAccessControl } from "@openzeppelin/contracts/access/IAccessControl.sol";
+import { MockUSDC } from "../src/MockUSDC.sol";
 
 contract MockUSDCTest is Test {
     MockUSDC internal token;
@@ -16,8 +16,8 @@ contract MockUSDCTest is Test {
     }
 
     function test_Metadata() public view {
-        assertEq(token.name(), 'Mock USD Coin');
-        assertEq(token.symbol(), 'mUSDC');
+        assertEq(token.name(), "Mock USD Coin");
+        assertEq(token.symbol(), "mUSDC");
         assertEq(token.decimals(), 6);
         assertEq(token.FAUCET_AMOUNT(), 100_000e6);
         assertEq(token.FAUCET_CAP(), 500_000e6);
@@ -35,9 +35,7 @@ contract MockUSDCTest is Test {
         vm.prank(user);
         vm.expectRevert(
             abi.encodeWithSelector(
-                IAccessControl.AccessControlUnauthorizedAccount.selector,
-                user,
-                minterRole
+                IAccessControl.AccessControlUnauthorizedAccount.selector, user, minterRole
             )
         );
         token.mint(user, 1e6);
@@ -59,8 +57,7 @@ contract MockUSDCTest is Test {
         vm.prank(user);
         vm.expectRevert(
             abi.encodeWithSelector(
-                MockUSDC.FaucetCooldownActive.selector,
-                block.timestamp + 1 hours
+                MockUSDC.FaucetCooldownActive.selector, block.timestamp + 1 hours
             )
         );
         token.faucet();

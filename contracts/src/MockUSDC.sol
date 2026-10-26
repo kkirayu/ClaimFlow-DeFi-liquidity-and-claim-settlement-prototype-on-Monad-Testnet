@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import { ERC20 } from '@openzeppelin/contracts/token/ERC20/ERC20.sol';
-import { AccessControl } from '@openzeppelin/contracts/access/AccessControl.sol';
+import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import { AccessControl } from "@openzeppelin/contracts/access/AccessControl.sol";
 
 /**
  * @title MockUSDC
@@ -12,7 +12,7 @@ import { AccessControl } from '@openzeppelin/contracts/access/AccessControl.sol'
  *      cooldown so a demo environment cannot be drained in a single transaction.
  */
 contract MockUSDC is ERC20, AccessControl {
-    bytes32 public constant MINTER_ROLE = keccak256('MINTER_ROLE');
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
     /// @notice Tokens a wallet receives from one faucet request.
     uint256 public constant FAUCET_AMOUNT = 100_000e6;
@@ -30,7 +30,7 @@ contract MockUSDC is ERC20, AccessControl {
     error FaucetCooldownActive(uint256 availableAt);
     error FaucetCapExceeded(uint256 requested, uint256 remaining);
 
-    constructor(address admin) ERC20('Mock USD Coin', 'mUSDC') {
+    constructor(address admin) ERC20("Mock USD Coin", "mUSDC") {
         if (admin == address(0)) revert ZeroAddress();
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
         _grantRole(MINTER_ROLE, admin);

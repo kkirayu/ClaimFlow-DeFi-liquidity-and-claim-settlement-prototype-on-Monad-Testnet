@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import { IERC20 } from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import { SafeERC20 } from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
-import { AccessControl } from '@openzeppelin/contracts/access/AccessControl.sol';
-import { ReentrancyGuard } from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import { AccessControl } from "@openzeppelin/contracts/access/AccessControl.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
  * @title LiquidityVault
@@ -19,10 +19,10 @@ import { ReentrancyGuard } from '@openzeppelin/contracts/utils/ReentrancyGuard.s
 contract LiquidityVault is AccessControl, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
-    bytes32 public constant CLAIM_MANAGER_ROLE = keccak256('CLAIM_MANAGER_ROLE');
+    bytes32 public constant CLAIM_MANAGER_ROLE = keccak256("CLAIM_MANAGER_ROLE");
 
     IERC20 public immutable asset;
-    string public constant shareSymbol = 'cfmUSDC';
+    string public constant shareSymbol = "cfmUSDC";
 
     uint256 public totalShares;
     mapping(address account => uint256 shares) public sharesOf;
@@ -128,9 +128,11 @@ contract LiquidityVault is AccessControl, ReentrancyGuard {
     }
 
     /// @notice Release a reservation without moving tokens. Funds become available again.
-    function release(
-        bytes32 claimId
-    ) external onlyRole(CLAIM_MANAGER_ROLE) returns (uint256 amount) {
+    function release(bytes32 claimId)
+        external
+        onlyRole(CLAIM_MANAGER_ROLE)
+        returns (uint256 amount)
+    {
         amount = reservedByClaim[claimId];
         if (amount == 0) revert ReservationMissing(claimId);
 
@@ -145,11 +147,11 @@ contract LiquidityVault is AccessControl, ReentrancyGuard {
      * @dev State is cleared before the external token transfer so a reentrant call cannot pay the
      *      same claim twice. `nonReentrant` provides an additional guard.
      */
-    function payout(
-        bytes32 claimId,
-        address recipient,
-        uint256 amount
-    ) external onlyRole(CLAIM_MANAGER_ROLE) nonReentrant {
+    function payout(bytes32 claimId, address recipient, uint256 amount)
+        external
+        onlyRole(CLAIM_MANAGER_ROLE)
+        nonReentrant
+    {
         if (recipient == address(0)) revert ZeroAddress();
         if (amount == 0) revert ZeroAmount();
 

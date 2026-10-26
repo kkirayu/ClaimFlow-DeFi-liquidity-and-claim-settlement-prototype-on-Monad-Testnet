@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import { BaseTest } from './BaseTest.sol';
-import { LiquidityVault } from '../src/LiquidityVault.sol';
+import { BaseTest } from "./BaseTest.sol";
+import { LiquidityVault } from "../src/LiquidityVault.sol";
 
 contract LiquidityVaultTest is BaseTest {
-    bytes32 internal constant CLAIM_A = keccak256('vault-claim-a');
-    bytes32 internal constant CLAIM_B = keccak256('vault-claim-b');
+    bytes32 internal constant CLAIM_A = keccak256("vault-claim-a");
+    bytes32 internal constant CLAIM_B = keccak256("vault-claim-b");
 
     function test_FirstDepositMintsOneToOneShares() public {
         vm.expectEmit(true, false, false, true, address(vault));
@@ -76,9 +76,7 @@ contract LiquidityVaultTest is BaseTest {
         vm.prank(lp1);
         vm.expectRevert(
             abi.encodeWithSelector(
-                LiquidityVault.InsufficientShares.selector,
-                10_000 * ONE + 1,
-                10_000 * ONE
+                LiquidityVault.InsufficientShares.selector, 10_000 * ONE + 1, 10_000 * ONE
             )
         );
         vault.withdraw(10_000 * ONE + 1);
@@ -130,9 +128,7 @@ contract LiquidityVaultTest is BaseTest {
         vm.prank(address(manager));
         vm.expectRevert(
             abi.encodeWithSelector(
-                LiquidityVault.InsufficientLiquidity.selector,
-                10_000 * ONE,
-                10_001 * ONE
+                LiquidityVault.InsufficientLiquidity.selector, 10_000 * ONE, 10_001 * ONE
             )
         );
         vault.reserve(CLAIM_A, 10_001 * ONE);
@@ -173,9 +169,7 @@ contract LiquidityVaultTest is BaseTest {
 
     function test_ReleaseRejectsMissingReservation() public {
         vm.prank(address(manager));
-        vm.expectRevert(
-            abi.encodeWithSelector(LiquidityVault.ReservationMissing.selector, CLAIM_A)
-        );
+        vm.expectRevert(abi.encodeWithSelector(LiquidityVault.ReservationMissing.selector, CLAIM_A));
         vault.release(CLAIM_A);
     }
 
@@ -202,9 +196,7 @@ contract LiquidityVaultTest is BaseTest {
         vault.reserve(CLAIM_A, 25_000 * ONE);
         vault.payout(CLAIM_A, recipient, 25_000 * ONE);
 
-        vm.expectRevert(
-            abi.encodeWithSelector(LiquidityVault.ReservationMissing.selector, CLAIM_A)
-        );
+        vm.expectRevert(abi.encodeWithSelector(LiquidityVault.ReservationMissing.selector, CLAIM_A));
         vault.payout(CLAIM_A, recipient, 25_000 * ONE);
         vm.stopPrank();
 
@@ -218,10 +210,7 @@ contract LiquidityVaultTest is BaseTest {
 
         vm.expectRevert(
             abi.encodeWithSelector(
-                LiquidityVault.ReservationMismatch.selector,
-                CLAIM_A,
-                25_000 * ONE,
-                20_000 * ONE
+                LiquidityVault.ReservationMismatch.selector, CLAIM_A, 25_000 * ONE, 20_000 * ONE
             )
         );
         vault.payout(CLAIM_A, recipient, 20_000 * ONE);
@@ -290,7 +279,7 @@ contract LiquidityVaultTest is BaseTest {
         uint256 owned = vault.sharesOf(lp1);
         uint256 shares = bound(rawShares, 1, owned);
         vm.prank(lp1);
-        try vault.withdraw(shares) {} catch {}
+        try vault.withdraw(shares) { } catch { }
 
         assertGe(vault.totalAssets(), vault.totalReserved());
         assertEq(vault.availableLiquidity(), vault.totalAssets() - vault.totalReserved());

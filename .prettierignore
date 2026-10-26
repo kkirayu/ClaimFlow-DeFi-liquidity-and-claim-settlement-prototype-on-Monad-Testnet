@@ -7,6 +7,7 @@ frontend/playwright-report
 contracts/lib
 contracts/out
 contracts/cache
+contracts/**/*.sol
 deployments/*.json
 !deployments/*.example.json
 benchmark-results

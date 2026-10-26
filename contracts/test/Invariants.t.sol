@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import { Test } from 'forge-std/Test.sol';
-import { StdInvariant } from 'forge-std/StdInvariant.sol';
-import { IERC20 } from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import { MockUSDC } from '../src/MockUSDC.sol';
-import { LiquidityVault } from '../src/LiquidityVault.sol';
+import { Test } from "forge-std/Test.sol";
+import { StdInvariant } from "forge-std/StdInvariant.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { MockUSDC } from "../src/MockUSDC.sol";
+import { LiquidityVault } from "../src/LiquidityVault.sol";
 
 /**
  * @dev Randomized actor for invariant testing. Every action is bounded and failures caused by
@@ -41,7 +41,7 @@ contract VaultHandler is Test {
         token.mint(actor, amount);
         vm.startPrank(actor);
         token.approve(address(vault), amount);
-        try vault.deposit(amount) {} catch {}
+        try vault.deposit(amount) { } catch { }
         vm.stopPrank();
     }
 
@@ -52,7 +52,7 @@ contract VaultHandler is Test {
 
         uint256 shares = bound(rawShares, 1, owned);
         vm.prank(actor);
-        try vault.withdraw(shares) {} catch {}
+        try vault.withdraw(shares) { } catch { }
     }
 
     function reserve(uint96 rawAmount) external {
@@ -60,7 +60,7 @@ contract VaultHandler is Test {
         if (available == 0) return;
 
         uint256 amount = bound(rawAmount, 1, available);
-        bytes32 claimId = keccak256(abi.encode('invariant-claim', nonce++));
+        bytes32 claimId = keccak256(abi.encode("invariant-claim", nonce++));
 
         // The handler itself holds CLAIM_MANAGER_ROLE for this test.
         try vault.reserve(claimId, amount) {
@@ -68,7 +68,7 @@ contract VaultHandler is Test {
             _reservedAmount[claimId] = amount;
             _isActive[claimId] = true;
             activeReserved += amount;
-        } catch {}
+        } catch { }
     }
 
     function release(uint256 seed) external {
@@ -80,7 +80,7 @@ contract VaultHandler is Test {
         delete _isActive[claimId];
         activeReserved -= amount;
 
-        try vault.release(claimId) {} catch {}
+        try vault.release(claimId) { } catch { }
     }
 
     function payout(uint256 seed) external {
@@ -92,7 +92,7 @@ contract VaultHandler is Test {
         delete _isActive[claimId];
         activeReserved -= amount;
 
-        try vault.payout(claimId, recipient, amount) {} catch {}
+        try vault.payout(claimId, recipient, amount) { } catch { }
     }
 
     function activeCount() external view returns (uint256) {
