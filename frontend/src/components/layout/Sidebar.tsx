@@ -12,7 +12,7 @@ import { cn } from '@/lib/cn';
 import { NETWORK_LABEL } from '@/lib/chain';
 
 const NAVIGATION = [
-  { to: '/', label: 'Overview', icon: LayoutDashboard, end: true },
+  { to: '/dashboard', label: 'Overview', icon: LayoutDashboard, end: true },
   { to: '/liquidity', label: 'Liquidity', icon: Droplets, end: false },
   { to: '/claims', label: 'Claims', icon: ClipboardList, end: false },
   { to: '/settlement', label: 'Settlement', icon: Send, end: false },

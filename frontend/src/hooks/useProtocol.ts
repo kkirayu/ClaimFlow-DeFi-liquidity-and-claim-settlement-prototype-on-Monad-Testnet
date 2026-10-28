@@ -200,7 +200,14 @@ export function useRoles(address?: Address) {
   return useQuery({
     queryKey: protocolKeys.roles(address),
     enabled: isConfigured && Boolean(address),
-    staleTime: 15_000,
+    // Roles authorize real value movement, so keep them fresh and retry transient RPC failures
+    // before the UI fails closed. `staleTime: 0` makes navigation and focus re-check permissions.
+    staleTime: 0,
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1_000 * 2 ** attempt, 4_000),
     queryFn: async (): Promise<RolesState> => {
       if (!address) {
         return {

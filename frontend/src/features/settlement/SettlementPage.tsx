@@ -14,7 +14,8 @@ import { AddressText, TxLink } from '@/components/data-display/AddressText';
 import { BatchPreview } from '@/components/transactions/BatchPreview';
 import { useTransaction } from '@/components/transactions/TransactionProvider';
 import { ConnectInlineButton } from '@/components/wallet/ConnectInlineButton';
-import { useClaims, usePoolSnapshot, useRoles } from '@/hooks/useProtocol';
+import { useClaims, usePoolSnapshot } from '@/hooks/useProtocol';
+import { useWalletAuth } from '@/hooks/useWalletAuth';
 import { approvedClaims } from '@/lib/claims';
 import { CHAIN_ID, publicClient } from '@/lib/chain';
 import { requireProtocol } from '@/lib/contracts';
@@ -42,10 +43,10 @@ function sumAmounts(claims: { amount: bigint }[]): bigint {
 }
 
 export function SettlementPage() {
-  const { address, isConnected, chainId } = useConnection();
+  const { address } = useConnection();
+  const auth = useWalletAuth();
   const claims = useClaims();
   const pool = usePoolSnapshot();
-  const roles = useRoles(address);
   const { run, isBusy } = useTransaction();
   const { manager } = requireProtocol();
 
@@ -57,12 +58,7 @@ export function SettlementPage() {
 
   const cap = pool.data?.maxBatchSize ?? 0n;
   const capNumber = Number(cap);
-  const canSettle =
-    isConnected &&
-    chainId === CHAIN_ID &&
-    Boolean(roles.data?.isSettler) &&
-    Boolean(pool.data) &&
-    !claims.error;
+  const canSettle = auth.canSettleClaims && Boolean(pool.data) && !claims.error;
 
   const approved = useMemo(() => approvedClaims(claims.data ?? []), [claims.data]);
   const eligibleIds = useMemo(
@@ -187,21 +183,15 @@ export function SettlementPage() {
     }
   };
 
-  const reviewDisabledReason = !isConnected
-    ? 'Connect a settlement wallet.'
-    : chainId !== CHAIN_ID
-      ? 'Switch to the configured network.'
-      : !roles.data
-        ? 'Checking wallet roles…'
-        : !roles.data.isSettler
-          ? 'Your wallet needs the Settlement Operator role.'
-          : !pool.data
-            ? 'Loading batch cap…'
-            : selectedClaims.length === 0
-              ? 'Select at least one claim.'
-              : overCap
-                ? 'Selection exceeds the batch cap.'
-                : undefined;
+  const reviewDisabledReason =
+    auth.blockReason('settler', 'settle claims') ??
+    (!pool.data
+      ? 'Loading batch cap…'
+      : selectedClaims.length === 0
+        ? 'Select at least one claim.'
+        : overCap
+          ? 'Selection exceeds the batch cap.'
+          : undefined);
 
   return (
     <div className="space-y-5">
@@ -252,19 +242,25 @@ export function SettlementPage() {
         </div>
       </section>
 
-      {!isConnected ? (
+      {!auth.isConnected ? (
         <div className="card flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-ink-secondary text-[13px] leading-5">
             Connect a wallet holding the Settlement Operator role to select and pay claims.
           </p>
           <ConnectInlineButton label="Connect wallet" />
         </div>
-      ) : chainId !== CHAIN_ID ? (
+      ) : auth.isWrongNetwork ? (
         <InlineNotice tone="danger" title="Wrong network">
           Switch your wallet to chain {CHAIN_ID} before settling claims. Read-only queue data is
           still available.
         </InlineNotice>
-      ) : roles.data && !roles.data.isSettler ? (
+      ) : auth.status === 'unavailable' ? (
+        <ErrorState
+          title="Role verification failed"
+          message="Settlement permissions could not be loaded, so batch signing stays disabled. Retry the role check."
+          onRetry={auth.retryRoles}
+        />
+      ) : auth.status === 'ready' && !auth.canSettleClaims ? (
         <InlineNotice tone="warning" title="Settlement role required">
           Your wallet can inspect this queue but does not hold Settlement Operator. The contract
           rejects settlement calls from other accounts.

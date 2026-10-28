@@ -14,7 +14,7 @@ const TITLES: Array<{ prefix: string; title: string; exact?: boolean }> = [
 ];
 
 function pageTitle(pathname: string): string {
-  if (pathname === '/') return 'Overview';
+  if (pathname === '/dashboard') return 'Overview';
   const match = TITLES.find((item) =>
     item.prefix.endsWith('/') ? pathname.startsWith(item.prefix) : pathname === item.prefix,
   );

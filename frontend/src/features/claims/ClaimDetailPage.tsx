@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import type { Hex } from 'viem';
-import { useConnection } from 'wagmi';
 import { ArrowLeft, Ban, Check, CircleSlash, Send, ShieldCheck, X } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
@@ -15,10 +14,10 @@ import { Timeline } from '@/components/data-display/Timeline';
 import { ConnectInlineButton } from '@/components/wallet/ConnectInlineButton';
 import { TransactionState } from '@/components/transactions/TransactionState';
 import { ClaimActionDialog } from './ClaimActionDialog';
-import { useClaim, useClaimEvents, usePoolSnapshot, useRoles } from '@/hooks/useProtocol';
+import { useClaim, useClaimEvents, usePoolSnapshot } from '@/hooks/useProtocol';
+import { useWalletAuth } from '@/hooks/useWalletAuth';
 import { isBytes32 } from '@/lib/claimForm';
 import { STATUS_META, ClaimStatus, availableClaimActions, type ClaimAction } from '@/lib/claims';
-import { EMPTY_ROLES } from '@/lib/roles';
 import { ZERO_HASH } from '@/lib/contracts';
 import { branchLabel, categoryLabel } from '@/lib/labels';
 import { formatDateTime, formatRelativeTime, formatToken } from '@/lib/format';
@@ -64,14 +63,13 @@ function DetailSkeleton() {
 
 export function ClaimDetailPage() {
   const { claimId: rawClaimId } = useParams();
-  const { address, isConnected } = useConnection();
+  const auth = useWalletAuth();
   const normalizedId = rawClaimId?.trim();
   const claimId = normalizedId && isBytes32(normalizedId) ? (normalizedId as Hex) : undefined;
   const claim = useClaim(claimId);
   const events = useClaimEvents(claimId);
-  const roles = useRoles(address);
   const pool = usePoolSnapshot();
-  const roleFlags = roles.data ?? EMPTY_ROLES;
+  const roleFlags = auth.effectiveRoles;
   const [action, setAction] = useState<ClaimAction | null>(null);
 
   if (rawClaimId && !claimId) {
@@ -131,7 +129,7 @@ export function ClaimDetailPage() {
   const actions = availableClaimActions(
     record,
     roleFlags,
-    address,
+    auth.address,
     pool.data?.allowSelfApproval ?? false,
   );
   const createdEvent = events.events.find((event) => event.kind === 'ClaimSubmitted');
@@ -141,8 +139,8 @@ export function ClaimDetailPage() {
     record.status === ClaimStatus.Cancelled;
   const selfApprovalBlocked =
     record.status === ClaimStatus.Pending &&
-    isConnected &&
-    address?.toLowerCase() === record.createdBy.toLowerCase() &&
+    auth.isConnected &&
+    auth.address?.toLowerCase() === record.createdBy.toLowerCase() &&
     pool.data?.allowSelfApproval === false;
 
   return (
@@ -300,13 +298,26 @@ export function ClaimDetailPage() {
             description="Only actions your wallet can actually perform are shown. The contract remains the authority."
           />
           <CardContent className="space-y-4 pt-4">
-            {!isConnected ? (
+            {!auth.isConnected ? (
               <div>
                 <p className="text-ink-secondary text-[13px] leading-5">
                   Connect a wallet to see role-gated actions for this claim.
                 </p>
                 <ConnectInlineButton className="mt-3" label="Connect wallet" />
               </div>
+            ) : terminal ? (
+              <p className="text-ink-secondary text-[13px] leading-5">
+                This claim is in a terminal state. No further writes are possible.
+              </p>
+            ) : auth.status === 'unavailable' ? (
+              <ErrorState
+                title="Role verification failed"
+                message="Wallet permissions could not be loaded, so claim actions stay disabled. Retry before signing anything."
+                onRetry={auth.retryRoles}
+                className="px-4 py-4"
+              />
+            ) : auth.status === 'checking' ? (
+              <p className="text-ink-secondary text-[13px] leading-5">Checking wallet roles…</p>
             ) : actions.length > 0 ? (
               <div className="flex flex-col gap-2">
                 {actions.map((nextAction) => {
@@ -328,9 +339,7 @@ export function ClaimDetailPage() {
               </div>
             ) : (
               <p className="text-ink-secondary text-[13px] leading-5">
-                {terminal
-                  ? 'This claim is in a terminal state. No further writes are possible.'
-                  : 'This wallet does not hold a role available for the claim’s current state.'}
+                This wallet does not hold a role available for the claim’s current state.
               </p>
             )}
 
@@ -341,7 +350,7 @@ export function ClaimDetailPage() {
               </p>
             ) : null}
 
-            {isConnected ? (
+            {auth.isConnected ? (
               <div>
                 <p className="text-ink-muted mb-2 text-[11px] font-semibold uppercase tracking-[0.06em]">
                   Your roles

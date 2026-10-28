@@ -8,7 +8,7 @@ test.describe('read-only product flows', () => {
   });
 
   test('overview shows separated liquidity metrics and claim counters', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/dashboard');
 
     await expect(page.getByRole('heading', { name: 'Overview', level: 1 })).toBeVisible();
     await expect(page.getByText('Vault balance', { exact: true }).first()).toBeVisible();
@@ -64,7 +64,7 @@ test.describe('mobile layout', () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
   test('navigation drawer works and the page does not overflow horizontally', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/dashboard');
     await page.getByRole('button', { name: 'Open navigation' }).click();
     const nav = page.getByRole('navigation', { name: 'Primary' });
     await expect(nav).toBeVisible();

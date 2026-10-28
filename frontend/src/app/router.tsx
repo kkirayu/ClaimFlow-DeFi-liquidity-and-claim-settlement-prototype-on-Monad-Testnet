@@ -8,12 +8,16 @@ import { SettlementPage } from '@/features/settlement/SettlementPage';
 import { BenchmarkPage } from '@/features/benchmark/BenchmarkPage';
 import { ProtocolPage } from '@/features/protocol/ProtocolPage';
 import { NotFoundPage } from '@/features/not-found/NotFoundPage';
+import { LandingPage } from '@/features/landing/LandingPage';
+import { UserPage } from '@/features/user/UserPage';
 
 export function AppRoutes() {
   return (
     <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="user" element={<UserPage />} />
       <Route element={<AppShell />}>
-        <Route index element={<OverviewPage />} />
+        <Route path="dashboard" element={<OverviewPage />} />
         <Route path="liquidity" element={<LiquidityPage />} />
         <Route path="claims" element={<ClaimsPage />} />
         <Route path="claims/:claimId" element={<ClaimDetailPage />} />

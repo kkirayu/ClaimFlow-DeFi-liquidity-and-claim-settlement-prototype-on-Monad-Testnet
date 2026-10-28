@@ -19,7 +19,8 @@ import { Field, Select } from '@/components/ui/Input';
 import { BenchmarkMetric } from './BenchmarkMetric';
 import { LatencyChart, ComparisonChart } from './LatencyChart';
 import { SampleTable } from './SampleTable';
-import { usePoolSnapshot, useRoles } from '@/hooks/useProtocol';
+import { usePoolSnapshot } from '@/hooks/useProtocol';
+import { useWalletAuth } from '@/hooks/useWalletAuth';
 import { useBenchmarkReports } from '@/hooks/useBenchmarkReports';
 import { useTransaction } from '@/components/transactions/TransactionProvider';
 import { publicClient, CHAIN_ID, NETWORK_LABEL, PROVIDER_LABEL } from '@/lib/chain';
@@ -70,7 +71,7 @@ export function BenchmarkPage() {
   const { address, isConnected, chainId } = useConnection();
   const { data: walletClient } = useWalletClient();
   const pool = usePoolSnapshot();
-  const roles = useRoles(address);
+  const auth = useWalletAuth();
   const { isBusy: walletBusy } = useTransaction();
   const { allReports, committedLoading, save, clear, reports } = useBenchmarkReports();
 
@@ -102,11 +103,14 @@ export function BenchmarkPage() {
     if (!isConnected) return 'Connect a wallet on the configured network.';
     if (chainId !== CHAIN_ID) return `Switch your wallet to chain ${CHAIN_ID}.`;
     if (!walletClient) return 'Wallet client is not ready yet.';
-    if (operation === 'submit' && !roles.data) return 'Checking wallet roles…';
-    if (operation === 'submit' && !roles.data?.isOperator)
+    if (operation === 'submit' || settlementOperation) {
+      if (auth.status === 'unavailable')
+        return 'Wallet permissions could not be verified. Retry the role check.';
+      if (auth.status === 'checking') return 'Checking wallet roles…';
+    }
+    if (operation === 'submit' && !auth.canSubmitClaims)
       return 'Claim Operator role is required to submit claims.';
-    if (settlementOperation && !roles.data) return 'Checking wallet roles…';
-    if (settlementOperation && !roles.data?.isSettler)
+    if (settlementOperation && !auth.canSettleClaims)
       return 'Settlement Operator role is required for settlement workloads.';
     if (settlementOperation && !pool.data) return 'Loading deployment safety settings…';
     if (settlementOperation && pool.data && !pool.data.allowSelfApproval)

@@ -126,7 +126,7 @@ export function WalletButton({ className }: { className?: string }) {
           onClick={() => void handleConnect()}
           disabled={isConnecting}
           aria-expanded={error ? true : undefined}
-          className="rounded-field bg-primary hover:bg-primary-hover inline-flex h-10 items-center gap-2 px-3.5 text-sm font-semibold text-white shadow-sm transition-colors disabled:opacity-70"
+          className="rounded-field bg-primary hover:bg-primary-hover inline-flex h-10 shrink-0 items-center gap-2 whitespace-nowrap px-3.5 text-sm font-semibold text-white shadow-sm transition-colors disabled:opacity-70"
         >
           {isConnecting ? (
             <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />

@@ -17,6 +17,7 @@
     "typecheck": "pnpm --filter @claimflow/frontend typecheck",
     "test": "pnpm --filter @claimflow/frontend test",
     "test:e2e": "pnpm --filter @claimflow/frontend test:e2e",
+    "test:e2e:business": "pnpm --filter @claimflow/frontend test:e2e:business",
     "contracts:build": "cd contracts && forge build",
     "contracts:test": "cd contracts && forge test",
     "contracts:fmt": "cd contracts && forge fmt",

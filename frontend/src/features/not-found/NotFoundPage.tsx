@@ -11,7 +11,7 @@ export function NotFoundPage() {
         title="Page not found"
         description="The page you requested does not exist in this ClaimFlow deployment. Return to the overview to continue."
         action={
-          <Link to="/" className={buttonStyles({ size: 'sm' })}>
+          <Link to="/dashboard" className={buttonStyles({ size: 'sm' })}>
             Back to overview
           </Link>
         }

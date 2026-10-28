@@ -368,7 +368,7 @@ export function ProtocolPage() {
         </CardContent>
       </Card>
 
-      <Link to="/" className={buttonStyles({ variant: 'ghost', size: 'sm', className: 'px-0' })}>
+      <Link to="/dashboard" className={buttonStyles({ variant: 'ghost', size: 'sm', className: 'px-0' })}>
         Back to overview
       </Link>
     </div>

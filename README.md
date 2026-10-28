@@ -151,17 +151,25 @@ batch settlement and full-batch rollback, reentrancy, and `balance >= totalReser
 ### Frontend
 
 ```bash
-pnpm test              # 67 Vitest tests
-pnpm test:e2e          # 7 Playwright tests (requires Anvil + local deployment)
+pnpm test              # 76 Vitest tests
+pnpm test:e2e          # 10 Playwright tests (requires Anvil + local deployment)
 ```
 
-Vitest covers formatting, validation, error classification, filtering and available actions,
-CSV escaping, liquidity math, benchmark metrics, and key UI states. Playwright injects an EIP-1193
-provider backed by the public Anvil account, then verifies read-only flows, mobile navigation, and a
-real `approve → deposit` transaction pair.
+Vitest covers auth derivation, formatting, validation, error classification, filtering and available
+actions, CSV escaping, liquidity math, benchmark metrics, and key UI states. Playwright injects an
+EIP-1193 provider backed by the public Anvil accounts, then verifies read-only flows, mobile
+navigation, a real `approve → deposit` transaction pair, and the full role-separated business flow.
+
+The business-flow spec grants the Anvil role accounts (`operator`, `approver`, `settler`) their
+protocol roles, submits a claim as the operator, approves and reserves as the approver, proves a
+roleless viewer is blocked, batch-settles as the settler, and checks the payout and terminal state
+on-chain. It also verifies that unauthenticated wallets fail closed and that role access survives a
+reload.
 
 For E2E, start the demo first (`pnpm dev:local`) or start Anvil and deploy separately. The tests skip
-themselves when the RPC is unreachable.
+themselves when the RPC is unreachable. If another dev server already owns port 5173, give Playwright
+its own server with `E2E_PORT=4173 pnpm test:e2e`; set `E2E_BASE_URL` only when reusing an existing
+server. `E2E_RPC_URL` overrides the Anvil RPC endpoint.
 
 ## Deploy to Monad Testnet
 

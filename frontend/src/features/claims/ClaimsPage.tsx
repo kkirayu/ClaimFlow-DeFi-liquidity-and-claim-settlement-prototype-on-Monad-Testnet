@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { useConnection } from 'wagmi';
 import { Ban, Check, Eye, Plus, Search, Send, SlidersHorizontal, X } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, CardHeader } from '@/components/ui/Card';
@@ -12,7 +11,8 @@ import { StatusBadge } from '@/components/data-display/StatusBadge';
 import { AddressText } from '@/components/data-display/AddressText';
 import { NewClaimDialog } from './NewClaimDialog';
 import { ClaimActionDialog } from './ClaimActionDialog';
-import { useClaims, usePoolSnapshot, useRoles } from '@/hooks/useProtocol';
+import { useClaims, usePoolSnapshot } from '@/hooks/useProtocol';
+import { useWalletAuth } from '@/hooks/useWalletAuth';
 import {
   STATUS_OPTIONS,
   availableClaimActions,
@@ -23,8 +23,6 @@ import {
   type ClaimStatusFilter,
 } from '@/lib/claims';
 import { BRANCH_OPTIONS, CATEGORY_OPTIONS, branchLabel, categoryLabel } from '@/lib/labels';
-import { EMPTY_ROLES } from '@/lib/roles';
-import { CHAIN_ID } from '@/lib/chain';
 import {
   formatDateTime,
   formatInteger,
@@ -152,13 +150,12 @@ function RowActions({
 }
 
 export function ClaimsPage() {
-  const { address, isConnected, chainId } = useConnection();
+  const auth = useWalletAuth();
   const [params, setParams] = useSearchParams();
   const filters = readFilters(params);
   const claims = useClaims();
   const pool = usePoolSnapshot();
-  const roles = useRoles(address);
-  const roleFlags = roles.data ?? EMPTY_ROLES;
+  const roleFlags = auth.effectiveRoles;
   const [newClaimOpen, setNewClaimOpen] = useState(false);
   const [action, setAction] = useState<{ claim: ClaimRecord; action: ClaimAction } | null>(null);
 
@@ -197,18 +194,11 @@ export function ClaimsPage() {
 
   const clearFilters = () => setParams(new URLSearchParams(), { replace: true });
 
-  const canCreate =
-    isConnected && chainId === CHAIN_ID && Boolean(roles.data?.isOperator) && !claims.error;
+  const canCreate = auth.canSubmitClaims && !claims.error;
 
-  const createDisabledReason = !isConnected
-    ? 'Connect a wallet that holds the Claim Operator role.'
-    : chainId !== CHAIN_ID
-      ? 'Switch to the configured network before submitting a claim.'
-      : !roles.data
-        ? 'Checking wallet roles…'
-        : !roles.data.isOperator
-          ? 'Your wallet does not hold the Claim Operator role.'
-          : undefined;
+  const createDisabledReason =
+    auth.blockReason('operator', 'submit a claim') ??
+    (claims.error ? 'Claims could not be loaded. Retry before creating a claim.' : undefined);
 
   return (
     <div className="space-y-5">
@@ -226,7 +216,7 @@ export function ClaimsPage() {
               <Plus className="h-4 w-4" aria-hidden="true" />
               New claim
             </Button>
-            {!canCreate && createDisabledReason && isConnected ? (
+            {!canCreate && createDisabledReason && auth.isConnected ? (
               <span className="text-ink-muted max-w-[260px] text-right text-[11px] leading-4">
                 {createDisabledReason}
               </span>
@@ -235,7 +225,13 @@ export function ClaimsPage() {
         }
       />
 
-      {isConnected && roles.data && !roles.data.isOperator ? (
+      {auth.status === 'unavailable' ? (
+        <ErrorState
+          title="Role verification failed"
+          message="Your wallet permissions could not be loaded, so privileged actions stay disabled. Retry before creating or reviewing claims."
+          onRetry={auth.retryRoles}
+        />
+      ) : auth.status === 'ready' && !auth.canSubmitClaims ? (
         <InlineNotice tone="info" title="Operator role required to submit">
           Your wallet can view claims and, with the relevant role, approve, reject, cancel, or
           settle them. Only wallets holding Claim Operator can create claims; the contract enforces
@@ -392,7 +388,7 @@ export function ClaimsPage() {
                     const actions = availableClaimActions(
                       claim,
                       roleFlags,
-                      address,
+                      auth.address,
                       pool.data?.allowSelfApproval ?? false,
                     );
                     return (
@@ -448,7 +444,7 @@ export function ClaimsPage() {
                 const actions = availableClaimActions(
                   claim,
                   roleFlags,
-                  address,
+                  auth.address,
                   pool.data?.allowSelfApproval ?? false,
                 );
                 return (

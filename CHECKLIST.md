@@ -5,11 +5,11 @@ Verified on 2026-10-26 against a local Anvil deployment (chain `31337`) with the
 
 ```bash
 pnpm contracts:test        # 62 passed
-pnpm test                  # 67 passed
+pnpm test                  # 76 passed
 pnpm lint                  # clean
 pnpm typecheck             # clean
 pnpm build                 # success
-pnpm test:e2e              # 7 passed
+pnpm test:e2e              # 10 passed
 node scripts/benchmark.mjs --network local --operation settle-batch --size 10 --batch 5 --publish
 ```
 
@@ -34,7 +34,7 @@ Status legend: **Verified** · **Partial** · **Deferred** · **Out of scope**.
 | 13  | UI waits for receipt before showing confirmed                                   | Verified                          | `TransactionProvider` sets confirmed only after `waitForTransactionReceipt`; reverted receipt is a failure. E2E observes receipt-gated state.                                                                       |
 | 14  | Transaction history has correct explorer links                                  | Verified (testnet links not live) | `TxLink`/`AddressText` generate Monadscan URLs; local deployment intentionally hides dead links because Anvil has no explorer. Testnet URLs are covered by unit logic, not a live testnet deployment.               |
 | 15  | Benchmark reports actual metrics, workload, and limitations                     | Verified                          | `docs/benchmark.md`; committed real Anvil report (`10 claims / 2 batches`, 391,030 gas, setup excluded); in-app and CLI runners.                                                                                    |
-| 16  | Main test suite passes; no known critical demo-path bug                         | Verified                          | 62 contract + 67 unit/component + 7 E2E tests pass; lint/typecheck/build clean.                                                                                                                                     |
+| 16  | Main test suite passes; no known critical demo-path bug                         | Verified                          | 62 contract + 76 unit/component + 10 E2E tests pass; lint/typecheck/build clean.                                                                                                                                     |
 | 17  | Demo uses mock token and synthetic data only; no PII                            | Verified                          | Faucet token; hash-only claim fields; synthetic seeds; persistent disclosure; no PII inputs.                                                                                                                        |
 
 ## PRD test plan coverage

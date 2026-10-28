@@ -25,6 +25,22 @@ In the wallet:
 > This deployment enables self-approval and gives the deployer every role so one wallet can complete
 > the flow. Testnet deployments default to separated roles.
 
+### Role-separated variant (optional)
+
+To demonstrate that the contract — not the UI — enforces permissions, switch the connected wallet to
+distinct Anvil accounts and grant each one role:
+
+| Step            | Anvil account | Role                  | Address                                      |
+| --------------- | ------------- | --------------------- | -------------------------------------------- |
+| Submit claim    | #1            | `CLAIM_OPERATOR_ROLE` | `0x70997970C51812dc3A010C7d01b50e0d17dc79C8` |
+| Approve/reserve | #2            | `CLAIM_APPROVER_ROLE` | `0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC` |
+| Batch settle    | #3            | `SETTLEMENT_ROLE`     | `0x90F79bf6EB2c4f870365E785982E1f101E93b906` |
+| Inspect only    | #4            | none                  | `0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65` |
+
+Grant roles from account #0 on **Protocol** (or with `cast send ... grantRole`). The roleless viewer
+sees an explicit “role required” notice and no write actions. `frontend/e2e/business-flow.spec.ts`
+automates exactly this sequence end to end.
+
 ## 1. Orientation — Overview (45 s)
 
 Point out:
